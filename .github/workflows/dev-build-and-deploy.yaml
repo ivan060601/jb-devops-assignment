@@ -25,3 +25,23 @@ jobs:
           tags: |
             ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.BRANCH_NAME }}-${{ github.sha }}
             ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.BRANCH_NAME }}-latest
+
+  deploy-to-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.33.1'
+      - name: Install helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.17.3'
+      - name: Extract kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/.kube/config
+      - name: Install the app
+        run: |
+          helm upgrade --install dev-${{ env.BRANCH_NAME }} ./manifests/base \
+          --namespace dev-${{ env.BRANCH_NAME }} --create-namespace \
+          --values ./chart/values-production.yaml

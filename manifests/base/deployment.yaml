@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: "Deployment"
+metadata:
+  name: jb-basic-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jb-basic-app
+  template:
+    metadata:
+      labels:
+        app: jb-basic-app
+    spec:
+      containers:
+        - name: jb-basic-app-container
+          image: shakhtarovivan/jb-basic-app:stable-latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: web
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /healthCheck
+              scheme: HTTP

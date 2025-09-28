@@ -1,0 +1,5 @@
+namespace: ${NAMESPACE}
+resources:
+  - ../../base
+patches:
+  - path: patch-ingress.yaml
