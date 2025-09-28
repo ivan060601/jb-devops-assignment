@@ -22,5 +22,5 @@ jobs:
         with:
           push: true
           tags: |
-            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app-$BRANCH_NAME:${{ github.sha }}
-            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app-$BRANCH_NAME:latest
+            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app-${{ env.BRANCH_NAME}}:${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app-${{ env.BRANCH_NAME}}:latest
