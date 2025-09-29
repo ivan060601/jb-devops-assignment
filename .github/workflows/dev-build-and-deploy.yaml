@@ -48,4 +48,5 @@ jobs:
           --namespace ${{ env.BRANCH_NAME }} --create-namespace \
           --values manifests-helm/values/dev.yaml \
           --set ingress.domainName=${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }} \
-          --set ingress.tls[0].hosts={ ${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }} }
+          --set ingress.tls[0].hosts={ ${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }} } \
+          --set image.tag=${{ env.BRANCH_NAME }}-${{ github.sha }}
