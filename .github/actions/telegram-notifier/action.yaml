@@ -20,5 +20,6 @@ runs:
           --request POST \
           --data '{
             "chat_id": "${{ inputs.telegram_chat_id }}",
-            "text": "${{ inputs.message_content }}"
+            "text": "${{ inputs.message_content }}",
+            "parse_mode": "MarkdownV2"
           }'
