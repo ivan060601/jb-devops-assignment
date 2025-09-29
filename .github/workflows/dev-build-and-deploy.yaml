@@ -31,6 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker-build
     steps:
+      - uses: actions/checkout@v5
       - name: Install kubectl
         uses: azure/setup-kubectl@v3
         with:
@@ -44,4 +45,10 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" > $HOME/config
       - name: Install the app
         run: |
-          ls -la
+          helm upgrade --install ${{ env.BRANCH_NAME }} ./manifests-helm/chart \
+          --kubeconfig $HOME/config \
+          --namespace ${{ env.BRANCH_NAME }} --create-namespace \
+          --values manifests-helm/values/dev.yaml \
+          --set "ingress.domainName=${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}" \
+          --set "ingress.tls[0].hosts={ ${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }} }" \
+          --set "image.tag=${{ env.BRANCH_NAME }}-${{ github.sha }}"
