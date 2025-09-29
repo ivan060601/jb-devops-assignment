@@ -35,6 +35,7 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             An error occured while building the docker image
+
             More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
   deploy-to-dev:
@@ -60,7 +61,7 @@ jobs:
           --namespace ${{ env.BRANCH_NAME }} --create-namespace \
           --values manifests-helm/values/dev.yaml \
           --set "ingress.domainName=${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}" \
-          --set "ingress.tls[0].hosts={ ${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}}" \
+          --set "ingress.tls[0].hosts={${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}}" \
           --set "image.tag=${{ env.BRANCH_NAME }}-${{ github.sha }}"
 
       - name: Notify SUCCESS in Telegram
@@ -71,6 +72,7 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             A new DEV environment was just updated for <code>${{ env.BRANCH_NAME }}</code>
+
             You can check it out here: https://${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}
       - name: Notify SUCCESS in Telegram
         if: failure()
@@ -80,4 +82,5 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             An error occured while deploying a <code>${{ env.BRANCH_NAME }}</code> branch
+
             More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
