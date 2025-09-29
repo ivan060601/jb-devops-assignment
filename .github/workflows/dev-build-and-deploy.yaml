@@ -43,26 +43,12 @@ jobs:
     needs: docker-build
     steps:
       - uses: actions/checkout@v5
-      - name: Install kubectl
-        uses: azure/setup-kubectl@v3
+      - name: Deploy a Helm-chart
+        uses: ./.github/actions/basic-app-deploy
         with:
-          version: 'v1.33.1'
-      - name: Install helm
-        uses: azure/setup-helm@v3
-        with:
-          version: 'v3.17.3'
-      - name: Extract kubeconfig
-        run: |
-          echo "${{ secrets.KUBECONFIG }}" > $HOME/config
-      - name: Install the app
-        run: |
-          helm upgrade --install ${{ env.BRANCH_NAME }} ./manifests-helm/chart \
-          --kubeconfig $HOME/config \
-          --namespace ${{ env.BRANCH_NAME }} --create-namespace \
-          --values manifests-helm/values/dev.yaml \
-          --set "ingress.domainName=${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}" \
-          --set "ingress.tls[0].hosts={${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}}" \
-          --set "image.tag=${{ env.BRANCH_NAME }}-${{ github.sha }}"
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          branch: ${{ env.BRANCH_NAME }}
+          domain_name: ${{ env.BASE_DOMAIN_NAME }}
 
       - name: Notify SUCCESS in Telegram
         if: success()

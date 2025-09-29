@@ -1,5 +1,5 @@
-name: Post to Telegram
-description: Post a message to a Telegram chat
+name: Build an image
+description: Builds a simple docker image with ./Dockerfile
 inputs:
   docker_username:
     description: Docker-registry username
