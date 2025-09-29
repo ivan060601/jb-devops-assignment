@@ -1,0 +1,6 @@
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+  tls:
+    - secretName: letsencrypt-jb-basic-app

@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ printf "%s-ingress" ( .Values.appName ) }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  rules:
+    - host: {{ .Values.ingress.domainName }}
+      http:
+        paths:
+          - pathType: Prefix
+            backend:
+              service:
+                name: {{ printf "%s-service" ( .Values.appName ) }}
+                port:
+                  number: {{ .Values.servicePort | default ("80") }}
+            path: /
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}

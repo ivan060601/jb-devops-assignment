@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: "Deployment"
+metadata:
+  name: {{ printf "%s" ( .Values.appName ) }}
+spec:
+  replicas: {{ .Values.replicaCount | default ("1") }}
+  selector:
+    matchLabels:
+      app: {{ printf "%s" ( .Values.appName ) }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app: {{ printf "%s" ( .Values.appName ) }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ printf "%s-container" ( .Values.appName ) }}
+          image: {{ .Values.image.repository }}/{{ .Values.appName }}:{{.Values.image.tag}}
+          imagePullPolicy: {{ .Values.image.pullPolicy | default ("Always") }}
+          ports:
+            - containerPort: {{ .Values.appPort }}
+              name: web
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              port: {{ .Values.appPort }}
+              path: /healthCheck
+              scheme: {{ (.Values.readinessProbe).scheme | default "HTTP" }}

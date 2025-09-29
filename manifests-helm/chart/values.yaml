@@ -1,0 +1,37 @@
+appName: jb-basic-app
+appPort: 8080
+replicaCount: 1
+
+image:
+  repository: shakhtarovivan
+  tag: stable-latest
+
+imagePullSecrets: []
+
+podAnnotations: {}
+
+ingressAnnotations: {}
+
+podLabels: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+readinessProbe:
+  scheme: "HTTP"
+  timeoutSeconds: 1
+  periodSeconds: 10
+  successThreshold: 1
+  failureThreshold: 3
+  initialDelaySeconds: 5
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi

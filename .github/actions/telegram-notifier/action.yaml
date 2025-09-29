@@ -1,0 +1,25 @@
+name: Post to Telegram
+description: Post a message to a Telegram chat
+inputs:
+  telegram_bot_token:
+    description: Auth token of the Telegram bot via which to post.
+    required: true
+  telegram_chat_id:
+    description: ID of the Telegram chat to which to send the message.
+    required: true
+  message_content:
+    description: String content of the Telegram message to send.
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        curl "https://api.telegram.org/bot${{ inputs.telegram_bot_token }}/sendMessage" \
+          --header "Content-Type: application/json" \
+          --request POST \
+          --data '{
+            "chat_id": "${{ inputs.telegram_chat_id }}",
+            "text": "${{ inputs.message_content }}",
+            "parse_mode": "HTML"
+          }'
