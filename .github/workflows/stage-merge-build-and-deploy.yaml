@@ -1,15 +1,12 @@
 on:
-  push:
-    paths:
-      - 'app/**'
-      - 'manifests-helm/**'
-    branches-ignore:
-      - main
+  pull_request:
+    types:
+      - closed
+    branches:
       - stage
-  workflow_dispatch:
 
 env:
-  BRANCH_NAME: ${{ github.ref_name }} 
+  BRANCH_NAME: ${{ github.base_ref || github.ref_name }} 
   BASE_DOMAIN_NAME: jb-assignment.shakhtarov.me
 
 jobs:
