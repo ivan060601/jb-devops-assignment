@@ -26,9 +26,24 @@ jobs:
         run: |
           git fetch --all --prune --depth=1
           week_ago=$(date -d '7 days ago' +%s)
+          
+          # getting all branches from a repo
+          for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin/ | sed 's|^origin/||'); do
+            
+            # skipping main & stage
+            if [[ "$branch" == "main" || "$branch" == "stage" ]]; then
+              continue
+            fi 
+            
+            # getting the last commit timestamp within each branch
+            last_commit_timestamp=$(git log -1 --format=%ct origin/$branch)
 
-          for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin/); do
-            echo $branch
+            # check if the last commit is older then a week
+            if [ "$last_commit_timestamp" -lt "$week_ago" ]; then
+              echo "Last commit is more then a week old"
+            else
+              echo "$branch is OK"
+            fi
           done
 
 

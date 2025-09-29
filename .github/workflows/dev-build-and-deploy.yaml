@@ -61,7 +61,8 @@ jobs:
             Env: <code>${{ env.BRANCH_NAME }}</code> 
 
             Link: https://${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}
-      - name: Notify SUCCESS in Telegram
+
+      - name: Notify FAIL in Telegram
         if: failure()
         uses: ./.github/actions/telegram-notifier
         with:
