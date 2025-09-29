@@ -70,7 +70,7 @@ jobs:
           telegram_bot_token: '${{ secrets.TELEGRAM_BOT_TOKEN }}'
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
-            A new DEV environment was just updated for `${{ env.BRANCH_NAME }}`
+            A new DEV environment was just updated for <code>${{ env.BRANCH_NAME }}</code>
             You can check it out here: https://${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}
       - name: Notify SUCCESS in Telegram
         if: failure()
@@ -79,5 +79,5 @@ jobs:
           telegram_bot_token: '${{ secrets.TELEGRAM_BOT_TOKEN }}'
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
-            An error occured while deploying a ${{ env.BRANCH_NAME }} branch
+            An error occured while deploying a <code>${{ env.BRANCH_NAME }}</code> branch
             More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
