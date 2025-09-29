@@ -51,6 +51,3 @@ spec:
               port: {{ .Values.appPort }}
               path: /healthCheck
               scheme: {{ (.Values.readinessProbe).scheme | default "HTTP" }}
-          env:
-          - name: PORT
-            value: {{ .Values.appPort }}
