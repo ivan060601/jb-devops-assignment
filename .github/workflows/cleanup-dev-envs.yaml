@@ -1,0 +1,16 @@
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-branches:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+      - name: Check branches older then a week
+        run: |
+          git fetch --all --prune --depth=1
+          git for-each-ref --format='%(refname:short)' refs/remotes/origin/
