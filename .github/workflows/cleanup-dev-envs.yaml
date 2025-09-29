@@ -41,9 +41,9 @@ jobs:
             # check if the last commit is older then a week
             if [ "$last_commit_timestamp" -lt "$week_ago" ]; then
               echo "$branch is inactive"
+              KUBECONFIG=$HOME/config kubectl delete ns "$branch"
             else
               echo "$branch is OK"
-              KUBECONFIG=$HOME/config kubectl delete ns "$branch"
             fi
           done
 
