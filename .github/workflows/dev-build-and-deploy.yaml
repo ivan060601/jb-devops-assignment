@@ -7,7 +7,6 @@ on:
 env:
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
   BASE_DOMAIN_NAME: jb-assignment.shakhtarov.me
-  KUBECONFIG: $HOME/config
 
 jobs:
   docker-build:
@@ -46,6 +45,7 @@ jobs:
       - name: Install the app
         run: |
           helm upgrade --install ${{ env.BRANCH_NAME }} ./manifests-helm/chart \
+          --kubeconfig $HOME/config \
           --namespace ${{ env.BRANCH_NAME }} --create-namespace \
           --values manifests-helm/values/dev.yaml \
           --set "ingress.domainName=${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}" \
