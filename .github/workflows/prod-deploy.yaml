@@ -12,14 +12,14 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     environment:
       name: prod
-      url: https://jb-assignment.shakhtarov.me
+      url: https://${{ vars.BASE_DOMAIN_NAME }}
     steps:
       - uses: actions/checkout@v5
       - name: Deploy a Helm-chart
         uses: ./.github/actions/basic-app-deploy
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          domain_name: jb-assignment.shakhtarov.me
+          domain_name: ${{ vars.BASE_DOMAIN_NAME }}
           values_path: manifests-helm/values/prod.yaml
           namespace: prod
           release_name: prod
@@ -35,7 +35,7 @@ jobs:
             UPDATE
             Env: <code>prod</code> 
 
-            Link: https://jb-assignment.shakhtarov.me
+            Link: https://${{ vars.BASE_DOMAIN_NAME }}
 
       - name: Notify FAIL in Telegram
         if: failure()
