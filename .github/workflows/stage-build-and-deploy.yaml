@@ -9,7 +9,6 @@ on:
 
 env:
   TAG_BASE: stable
-  BASE_DOMAIN_NAME: jb-assignment.shakhtarov.me
 
 jobs:
   docker-build:
@@ -42,14 +41,14 @@ jobs:
     needs: docker-build
     environment:
       name: stage
-      url: https://stable.jb-assignment.shakhtarov.me
+      url: https://stable.${{ vars.BASE_DOMAIN_NAME }}
     steps:
       - uses: actions/checkout@v5
       - name: Deploy a Helm-chart
         uses: ./.github/actions/basic-app-deploy
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          domain_name: ${{ env.TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}
+          domain_name: ${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
           values_path: manifests-helm/values/stage.yaml
           namespace: ${{ env.TAG_BASE }}
           release_name: ${{ env.TAG_BASE }}
@@ -65,7 +64,7 @@ jobs:
             UPDATE
             Env: <code>${{ env.TAG_BASE }}</code> 
 
-            Link: https://${{ env.TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}
+            Link: https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
 
       - name: Notify FAIL in Telegram
         if: failure()
@@ -108,10 +107,10 @@ jobs:
     steps:
       - name: Wait while SSL certificate is issued
         run: |
-          echo "Waiting for a trusted SSL certificate for ${{ env.TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }} ..."
+          echo "Waiting for a trusted SSL certificate for ${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }} ..."
 
           for i in {1..30}; do
-            if curl -sI "https://${{ env.TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}"  >/dev/null 2>&1; then
+            if curl -sI "https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}"  >/dev/null 2>&1; then
               echo "✅ Trusted SSL certificate is available for the domain"
               exit 0
             else
@@ -124,4 +123,4 @@ jobs:
 
       - name: Really strong test
         run: |
-          curl https://${{ env.TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}/healthCheck 
+          curl https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}/healthCheck 
