@@ -1,0 +1,16 @@
+ingress:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+  tls:
+    - secretName: letsencrypt-jb-basic-app
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 100Mi
+
+replicaCount: 2

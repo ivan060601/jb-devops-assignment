@@ -51,6 +51,7 @@ jobs:
           kubeconfig: ${{ secrets.KUBECONFIG }}
           branch: ${{ env.BRANCH_NAME }}
           domain_name: ${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}
+          values_path: manifests-helm/values/dev.yaml
 
       - name: Notify SUCCESS in Telegram
         if: success()
