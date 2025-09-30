@@ -4,15 +4,24 @@ inputs:
   kubeconfig:
     description: A kubeconfig file content. You know, for Helm
     required: true
-  branch:
-    description: Docker-registry password
-    required: true
   domain_name:
     description: Docker image name
     required: true
   values_path:
     description: A path to a values.yaml file
     required: true
+  namespace:
+    description: A namespace for a chart to be deployed to
+    required: false
+    default: 'default'
+  release_name:
+    description: A release name for a Helm chart
+    required: false
+    default: 'jb-basic-app'
+  image_tag: 
+    description: A custom tag of an installed image
+    required: false
+    default: 'stable-latest'
 runs:
   using: "composite"
   steps:
@@ -31,11 +40,11 @@ runs:
     - name: Install the app
       shell: bash
       run: |
-        helm upgrade --install ${{ inputs.branch }} ./manifests-helm/chart \
+        helm upgrade --install ${{ inputs.release_name }} ./manifests-helm/chart \
         --kubeconfig $HOME/config \
-        --namespace ${{ inputs.branch }} --create-namespace \
+        --namespace ${{ inputs.namespace }} --create-namespace \
         --values ${{ inputs.values_path }} \
         --set "ingress.domainName=${{ inputs.domain_name }}" \
         --set "ingress.tls[0].hosts={${{ inputs.domain_name }}}" \
-        --set "image.tag=${{ inputs.branch }}-${{ github.sha }}" \
+        --set "image.tag=${{ inputs.image_tag }}" \
         --wait --timeout 5m

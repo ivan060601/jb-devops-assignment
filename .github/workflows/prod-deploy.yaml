@@ -1,0 +1,50 @@
+name: Prod - Deploy
+
+on:
+  workflow_run:
+    workflows: [Stage - Build & Deploy]
+    types:
+      - completed    
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: main
+      url: https://jb-assignment.shakhtarov.me
+    steps:
+      - uses: actions/checkout@v5
+      - name: Deploy a Helm-chart
+        uses: ./.github/actions/basic-app-deploy
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          domain_name: jb-assignment.shakhtarov.me
+          values_path: manifests-helm/values/prod.yaml
+          namespace: prod
+          release_name: prod
+          image_tag: stable-${{ github.sha }}
+
+      - name: Notify SUCCESS in Telegram
+        if: success()
+        uses: ./.github/actions/telegram-notifier
+        with:
+          telegram_bot_token: '${{ secrets.TELEGRAM_BOT_TOKEN }}'
+          telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
+          message_content: |
+            UPDATE
+            Env: <code>${{ env.TAG_BASE }}</code> 
+
+            Link: https://${{ env.TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}
+
+      - name: Notify FAIL in Telegram
+        if: failure()
+        uses: ./.github/actions/telegram-notifier
+        with:
+          telegram_bot_token: '${{ secrets.TELEGRAM_BOT_TOKEN }}'
+          telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
+          message_content: |
+            ERROR
+            An error occured while deploying a <code>${{ env.TAG_BASE }}</code>
+
+            More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
