@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  BRANCH_NAME: ${{ github.ref_name }} 
+  BRANCH_NAME: ${{ github.base_ref || github.ref_name }} 
   BASE_DOMAIN_NAME: jb-assignment.shakhtarov.me
 
 jobs:
@@ -48,7 +48,7 @@ jobs:
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
           branch: ${{ env.BRANCH_NAME }}
-          domain_name: ${{ env.BASE_DOMAIN_NAME }}
+          domain_name: ${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}
 
       - name: Notify SUCCESS in Telegram
         if: success()
