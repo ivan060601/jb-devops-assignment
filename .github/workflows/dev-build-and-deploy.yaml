@@ -39,6 +39,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: docker-build
+    environment:
+      name: dev
+      url: https://${{ TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}
     steps:
       - uses: actions/checkout@v5
       - name: Deploy a Helm-chart

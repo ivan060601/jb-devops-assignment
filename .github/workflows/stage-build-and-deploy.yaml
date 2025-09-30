@@ -42,7 +42,7 @@ jobs:
     needs: docker-build
     environment:
       name: stage
-      url: https://stable.jb-assignment.shakhtarov.me
+      url: https://stable.${{ env.BASE_DOMAIN_NAME }}
     steps:
       - uses: actions/checkout@v5
       - name: Deploy a Helm-chart
