@@ -51,6 +51,7 @@ jobs:
           release_name: ${{ env.TAG_BASE }}
           image_tag: ${{ env.TAG_BASE }}-${{ github.sha }}
 
+
       - name: Notify SUCCESS in Telegram
         if: success()
         uses: ./.github/actions/telegram-notifier
