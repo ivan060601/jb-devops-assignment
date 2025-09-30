@@ -2,20 +2,16 @@ name: Dev - Build & Deploy
 
 on:
   push:
-    paths:
-      - 'app/**'
-      - 'manifests-helm/**'
     branches-ignore:
       - main
-      - stage
-  workflow_dispatch:
 
 env:
-  BRANCH_NAME: ${{ github.base_ref || github.ref_name }} 
+  TAG_BASE: ${{ github.ref_name }} 
   BASE_DOMAIN_NAME: jb-assignment.shakhtarov.me
 
 jobs:
   docker-build:
+    if: ${{ github.ref_name != 'main' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -25,8 +21,8 @@ jobs:
           docker_username: ${{ vars.DOCKERHUB_USERNAME }}
           docker_password: ${{ secrets.DOCKERHUB_TOKEN }}
           image_names: |
-            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.BRANCH_NAME }}-${{ github.sha }}
-            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.BRANCH_NAME }}-latest
+            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.TAG_BASE }}-${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.TAG_BASE }}-latest
 
       - name: Notify FAIL in Telegram
         if: failure()
@@ -49,9 +45,11 @@ jobs:
         uses: ./.github/actions/basic-app-deploy
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          branch: ${{ env.BRANCH_NAME }}
-          domain_name: ${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}
+          domain_name: ${{ env.TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}
           values_path: manifests-helm/values/dev.yaml
+          namespace: ${{ env.TAG_BASE }}
+          release_name: ${{ env.TAG_BASE }}
+          image_tag: ${{ env.TAG_BASE }}-${{ github.sha }}
 
       - name: Notify SUCCESS in Telegram
         if: success()
@@ -61,9 +59,9 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             UPDATE
-            Env: <code>${{ env.BRANCH_NAME }}</code> 
+            Env: <code>${{ env.TAG_BASE }}</code> 
 
-            Link: https://${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}
+            Link: https://${{ env.TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}
 
       - name: Notify FAIL in Telegram
         if: failure()
@@ -73,6 +71,6 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             ERROR
-            An error occured while deploying a <code>${{ env.BRANCH_NAME }}</code> branch
+            An error occured while deploying a <code>${{ env.TAG_BASE }}</code> branch
 
             More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
