@@ -1,3 +1,5 @@
+name: Cleanup branches after deletion
+
 on: delete
 jobs:
   cleanup:

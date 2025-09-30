@@ -1,3 +1,5 @@
+name: Cleanup unused branches
+
 on:
   schedule:
     - cron: '0 0 * * *'
