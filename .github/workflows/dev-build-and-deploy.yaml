@@ -41,7 +41,7 @@ jobs:
     needs: docker-build
     environment:
       name: dev
-      url: https://${{ TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}
+      url: https://${{ env.TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}
     steps:
       - uses: actions/checkout@v5
       - name: Deploy a Helm-chart
