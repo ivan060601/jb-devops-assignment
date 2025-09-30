@@ -46,5 +46,5 @@ runs:
         --values ${{ inputs.values_path }} \
         --set "ingress.domainName=${{ inputs.domain_name }}" \
         --set "ingress.tls[0].hosts={${{ inputs.domain_name }}}" \
-        --set "image.tag=${{ inputs.image_tag ) }}" \
+        --set "image.tag=${{ inputs.image_tag }}" \
         --wait --timeout 5m
