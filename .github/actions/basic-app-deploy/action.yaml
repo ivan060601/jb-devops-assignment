@@ -34,4 +34,5 @@ runs:
         --values manifests-helm/values/dev.yaml \
         --set "ingress.domainName=${{ inputs.domain_name }}" \
         --set "ingress.tls[0].hosts={${{ inputs.domain_name }}}" \
-        --set "image.tag=${{ inputs.branch }}-${{ github.sha }}"
+        --set "image.tag=${{ inputs.branch }}-${{ github.sha }}" \
+        --wait
