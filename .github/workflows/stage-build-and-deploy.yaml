@@ -40,6 +40,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: docker-build
+    environment:
+      name: stage
+      url: https://stable.jb-assignment.shakhtarov.me
     steps:
       - uses: actions/checkout@v5
       - name: Deploy a Helm-chart
