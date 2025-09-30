@@ -1,12 +1,9 @@
 on:
-  push:
-    paths:
-      - 'app/**'
-      - 'manifests-helm/**'
-    branches-ignore:
-      - main
+  pull_request:
+    types:
+      - closed
+    branches:
       - stage
-  workflow_dispatch:
 
 env:
   BRANCH_NAME: ${{ github.base_ref || github.ref_name }} 
@@ -73,3 +70,48 @@ jobs:
             An error occured while deploying a <code>${{ env.BRANCH_NAME }}</code> branch
 
             More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+  
+  run_vulnerability_tests:
+    needs: docker-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.BRANCH_NAME }}-${{ github.sha }}
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+
+  run_smoke_tests:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait while SSL certificate is issued
+        run: |
+          echo "Waiting for a trusted SSL certificate for ${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }} ..."
+
+          for i in {1..30}; do
+            if curl -sI "https://${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}"  >/dev/null 2>&1; then
+              echo "✅ Trusted SSL certificate is available for the domain"
+              exit 0
+            else
+              sleep 10
+            fi
+          done
+
+          echo "❌ Timeout: Trusted SSL certificate did not appear within 5 minutes."
+          exit 1
+
+      - name: Really strong test
+        run: |
+          curl https://${{ env.BRANCH_NAME }}.${{ env.BASE_DOMAIN_NAME }}/healthCheck 
