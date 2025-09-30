@@ -11,7 +11,7 @@ def health_check():
     return "Ok"
 
 @app.route("/healthCheckButBroken")
-def health_check():
+def broken_health_check():
     return Response(status=500)
 
 @app.route("/", defaults={"path": ""})
