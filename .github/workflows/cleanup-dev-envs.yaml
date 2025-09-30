@@ -1,3 +1,5 @@
+name: Cleanup unused branches
+
 on:
   schedule:
     - cron: '0 0 * * *'
@@ -10,7 +12,39 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 1
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.33.1'
+      - name: Install helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'v3.17.3'
+      - name: Extract kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > $HOME/config
+
       - name: Check branches older then a week
         run: |
           git fetch --all --prune --depth=1
-          git for-each-ref --format='%(refname:short)' refs/remotes/origin/
+          week_ago=$(date -d '7 days ago' +%s)
+          
+          # getting all branches from a repo
+          for branch in $(git for-each-ref --format='%(refname:short)' refs/remotes/origin/ | sed 's|^origin/||'); do
+            
+            # skipping main & stage
+            if [[ "$branch" == "main" || "$branch" == "stage" || "$branch" == "origin" ]]; then
+              continue
+            fi 
+            
+            # getting the last commit timestamp within each branch
+            last_commit_timestamp=$(git log -1 --format=%ct origin/$branch)
+
+            # check if the last commit is older then a week
+            if [ "$last_commit_timestamp" -lt "$week_ago" ]; then
+              echo "$branch is inactive"
+              KUBECONFIG=$HOME/config kubectl delete ns "$branch"
+            else
+              echo "$branch is OK"
+            fi
+          done
