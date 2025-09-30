@@ -10,7 +10,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment:
-      name: main
+      name: prod
       url: https://jb-assignment.shakhtarov.me
     steps:
       - uses: actions/checkout@v5
@@ -32,9 +32,9 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             UPDATE
-            Env: <code>${{ env.TAG_BASE }}</code> 
+            Env: <code>prod</code> 
 
-            Link: https://${{ env.TAG_BASE }}.${{ env.BASE_DOMAIN_NAME }}
+            Link: https://jb-assignment.shakhtarov.me
 
       - name: Notify FAIL in Telegram
         if: failure()
@@ -44,7 +44,7 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             ERROR
-            An error occured while deploying a <code>${{ env.TAG_BASE }}</code>
+            An error occured while deploying a <code>prod</code>
 
             More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
