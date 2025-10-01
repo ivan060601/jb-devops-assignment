@@ -2,6 +2,9 @@ name: Dev - Build & Deploy
 
 on:
   push:
+    paths:
+      - '!.gitignore'
+      - '!README.md'
     branches-ignore:
       - main
 
