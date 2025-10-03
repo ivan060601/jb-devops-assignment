@@ -5,6 +5,9 @@ on:
     branches-ignore:
       - main
       - stage
+    paths:
+      - '!.gitignore'
+      - '!README.md'
 
 env:
   TAG_BASE: ${{ github.ref_name }} 
