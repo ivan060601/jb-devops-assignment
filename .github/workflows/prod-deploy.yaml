@@ -24,8 +24,8 @@ jobs:
       - name: Re-tag an image for prod
         run: |
           docker buildx imagetools create --tag \
-          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:stage-${{ github.event.workflow_run.head_sha }} \
-          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:main-${{ github.run_number }}
+          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:main-${{ github.run_number }} \
+          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:stage-${{ github.event.workflow_run.head_sha }} 
 
   deploy:
     runs-on: ubuntu-latest
@@ -40,7 +40,7 @@ jobs:
           values_path: manifests-helm/values/prod.yaml
           namespace: prod
           release_name: prod
-          image_tag: stable-${{ github.event.workflow_run.head_sha }}
+          image_tag: main-${{ github.run_number }}
 
       - name: Notify SUCCESS in Telegram
         if: success()
