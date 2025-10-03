@@ -6,9 +6,9 @@ on:
       - closed
     branches:
       - stage
-    paths:
-      - '!.gitignore'
-      - '!README.md'
+    paths-ignore:
+      - '.gitignore'
+      - 'README.md'
 
 env:
   TAG_BASE: stage
