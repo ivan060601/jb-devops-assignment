@@ -5,10 +5,10 @@ on:
     types:
       - closed
     branches:
-      - main
+      - stage
 
 env:
-  TAG_BASE: stable
+  TAG_BASE: stage
 
 jobs:
   docker-build:
@@ -41,7 +41,7 @@ jobs:
     needs: docker-build
     environment:
       name: stage
-      url: https://stable.${{ vars.BASE_DOMAIN_NAME }}
+      url: https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
     steps:
       - uses: actions/checkout@v5
       - name: Deploy a Helm-chart
@@ -123,4 +123,4 @@ jobs:
 
       - name: Really strong test
         run: |
-          curl https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}/healthCheck 
+          curl --fail https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}/healthCheck 

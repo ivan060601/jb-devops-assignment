@@ -4,6 +4,7 @@ on:
   push:
     branches-ignore:
       - main
+      - stage
 
 env:
   TAG_BASE: ${{ github.ref_name }} 
