@@ -1,10 +1,11 @@
 name: Prod - Deploy
 
 on:
-  workflow_run:
-    workflows: [Stage - Build & Deploy]
-    types:
-      - completed    
+  workflow_call:
+    inputs:
+      image_tag:
+        required: true
+        type: string
 
 jobs:
   create-tag-after-approve:
@@ -25,7 +26,7 @@ jobs:
         run: |
           docker buildx imagetools create --tag \
           ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:main-${{ github.run_number }} \
-          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:stage-${{ github.event.workflow_run.head_sha }} 
+          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ inputs.image_tag }}
 
   deploy:
     runs-on: ubuntu-latest

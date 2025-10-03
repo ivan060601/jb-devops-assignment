@@ -10,9 +10,6 @@ on:
       - '.gitignore'
       - 'README.md'
 
-env:
-  TAG_BASE: stage
-
 jobs:
   docker-build:
     runs-on: ubuntu-latest
@@ -24,8 +21,8 @@ jobs:
           docker_username: ${{ vars.DOCKERHUB_USERNAME }}
           docker_password: ${{ secrets.DOCKERHUB_TOKEN }}
           image_names: |
-            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.TAG_BASE }}-${{ github.sha }}
-            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.TAG_BASE }}-latest
+            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ github.base_ref }}-${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ github.base_ref }}-latest
 
       - name: Notify FAIL in Telegram
         if: failure()
@@ -44,18 +41,18 @@ jobs:
     needs: docker-build
     environment:
       name: stage
-      url: https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
+      url: https://${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }}
     steps:
       - uses: actions/checkout@v5
       - name: Deploy a Helm-chart
         uses: ./.github/actions/basic-app-deploy
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          domain_name: ${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
+          domain_name: ${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }}
           values_path: manifests-helm/values/stage.yaml
-          namespace: ${{ env.TAG_BASE }}
-          release_name: ${{ env.TAG_BASE }}
-          image_tag: ${{ env.TAG_BASE }}-${{ github.sha }}
+          namespace: ${{ github.base_ref }}
+          release_name: ${{ github.base_ref }}
+          image_tag: ${{ github.base_ref }}-${{ github.sha }}
 
       - name: Notify SUCCESS in Telegram
         if: success()
@@ -65,9 +62,9 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             UPDATE
-            Env: <code>${{ env.TAG_BASE }}</code> 
+            Env: <code>${{ github.base_ref }}</code> 
 
-            Link: https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
+            Link: https://${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }}
 
       - name: Notify FAIL in Telegram
         if: failure()
@@ -77,7 +74,7 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             ERROR
-            An error occured while deploying a <code>${{ env.TAG_BASE }}</code>
+            An error occured while deploying a <code>${{ github.base_ref }}</code>
 
             More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
   
@@ -90,7 +87,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.TAG_BASE }}-${{ github.sha }}
+          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ github.base_ref }}-${{ github.sha }}
           exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -110,10 +107,10 @@ jobs:
     steps:
       - name: Wait while SSL certificate is issued
         run: |
-          echo "Waiting for a trusted SSL certificate for ${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }} ..."
+          echo "Waiting for a trusted SSL certificate for ${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }} ..."
 
           for i in {1..30}; do
-            if curl -sI "https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}"  >/dev/null 2>&1; then
+            if curl -sI "https://${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }}"  >/dev/null 2>&1; then
               echo "✅ Trusted SSL certificate is available for the domain"
               exit 0
             else
@@ -126,4 +123,12 @@ jobs:
 
       - name: Really strong test
         run: |
-          curl --fail https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}/healthCheck 
+          curl --fail https://${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }}/healthCheck 
+
+  promote_to_prod:
+    needs:
+      - run_vulnerability_tests
+      - run_smoke_tests
+    uses: ./.github/workflows/prod-deploy.yml
+    with:
+      image_tag: ${{ github.base_ref }}-${{ github.sha }}

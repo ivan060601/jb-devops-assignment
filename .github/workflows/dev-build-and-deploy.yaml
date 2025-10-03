@@ -9,9 +9,6 @@ on:
       - '.gitignore'
       - 'README.md'
 
-env:
-  TAG_BASE: ${{ github.ref_name }} 
-
 jobs:
   docker-build:
     if: ${{ github.ref_name != 'main' }}
@@ -24,8 +21,8 @@ jobs:
           docker_username: ${{ vars.DOCKERHUB_USERNAME }}
           docker_password: ${{ secrets.DOCKERHUB_TOKEN }}
           image_names: |
-            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.TAG_BASE }}-${{ github.sha }}
-            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.TAG_BASE }}-latest
+            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ github.ref_name }}-${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ github.ref_name }}-latest
 
       - name: Notify FAIL in Telegram
         if: failure()
@@ -44,18 +41,18 @@ jobs:
     needs: docker-build
     environment:
       name: dev
-      url: https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
+      url: https://${{ github.ref_name }}.${{ vars.BASE_DOMAIN_NAME }}
     steps:
       - uses: actions/checkout@v5
       - name: Deploy a Helm-chart
         uses: ./.github/actions/basic-app-deploy
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          domain_name: ${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
+          domain_name: ${{ github.ref_name }}.${{ vars.BASE_DOMAIN_NAME }}
           values_path: manifests-helm/values/dev.yaml
-          namespace: ${{ env.TAG_BASE }}
-          release_name: ${{ env.TAG_BASE }}
-          image_tag: ${{ env.TAG_BASE }}-${{ github.sha }}
+          namespace: ${{ github.ref_name }}
+          release_name: ${{ github.ref_name }}
+          image_tag: ${{ github.ref_name }}-${{ github.sha }}
 
 
       - name: Notify SUCCESS in Telegram
@@ -66,9 +63,9 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             UPDATE
-            Env: <code>${{ env.TAG_BASE }}</code> 
+            Env: <code>${{ github.ref_name }}</code> 
 
-            Link: https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
+            Link: https://${{ github.ref_name }}.${{ vars.BASE_DOMAIN_NAME }}
 
       - name: Notify FAIL in Telegram
         if: failure()
@@ -78,6 +75,6 @@ jobs:
           telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
           message_content: |
             ERROR
-            An error occured while deploying a <code>${{ env.TAG_BASE }}</code> branch
+            An error occured while deploying a <code>${{ github.ref_name }}</code> branch
 
             More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
