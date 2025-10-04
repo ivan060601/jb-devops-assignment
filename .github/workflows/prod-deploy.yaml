@@ -28,7 +28,7 @@ jobs:
         run: |
           docker buildx imagetools create --tag \
           ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:main-${{ github.run_number }} \
-          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ inputs.image_tag }}
+          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:stage-${{ github.event.workflow_run.outputs.merge_sha }}
 
   # deploy:
   #   needs: create-tag-after-approve
