@@ -70,11 +70,3 @@ jobs:
       - name: Really strong test
         run: |
           curl --fail https://${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }}/healthCheck 
-
-  promote_to_prod:
-    needs:
-      - run_vulnerability_tests
-      - run_smoke_tests
-    uses: ./.github/workflows/prod-deploy.yaml
-    with:
-      image_tag: ${{ github.base_ref }}-${{ github.sha }}
