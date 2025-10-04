@@ -9,6 +9,14 @@ on:
       - 'README.md'
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Trivy vulnerability scanner
+        run: |
+          echo ${{ github.event_name }}
+          echo ${{ github.event.action }}
+          echo ${{ github.event }}
   build:
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     uses: ./.github/workflows/general-build.yaml
