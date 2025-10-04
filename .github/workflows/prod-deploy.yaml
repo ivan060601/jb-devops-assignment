@@ -41,9 +41,8 @@ jobs:
 
       - name: Save SHA
         run: |
-          cat ${{ runner.temp }}/artifacts/sha.txt
-          SHA_OUTPUT=$(cat "${{ runner.temp }}/artifacts/sha.txt")
-          echo "$SHA_OUTPUT" >> $GITHUB_ENV
+          SHA_OUTPUT=$(cat "${{ runner.temp }}/artifacts/sha.txt" | cut -d '=' -f2)
+          echo "SHA=$SHA_OUTPUT" >> $GITHUB_ENV
 
 
   create-tag-after-approve:
