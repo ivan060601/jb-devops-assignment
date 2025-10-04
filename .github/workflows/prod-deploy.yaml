@@ -9,6 +9,8 @@ on:
 jobs:
   download-sha:
     runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.save-sha.outputs.sha }}
     steps:
       - name: Download artifact
         uses: actions/github-script@v8
@@ -40,9 +42,10 @@ jobs:
         run: unzip "${{ runner.temp }}/artifacts/sha_output.zip" -d "${{ runner.temp }}/artifacts"
 
       - name: Save SHA
+        id: save-sha
         run: |
           SHA_OUTPUT=$(cat "${{ runner.temp }}/artifacts/sha.txt" | cut -d '=' -f2)
-          echo "SHA=$SHA_OUTPUT" >> $GITHUB_OUTPUT
+          echo "sha=$SHA_OUTPUT" >> $GITHUB_OUTPUT
 
 
   create-tag-after-approve:
@@ -61,7 +64,7 @@ jobs:
         run: |
           docker buildx imagetools create --tag \
           ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:main-${{ github.run_number }} \
-          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:stage-${{ needs.download-sha.outputs.SHA }}
+          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:stage-${{ needs.download-sha.outputs.sha }}
 
   deploy:
     needs: create-tag-after-approve
