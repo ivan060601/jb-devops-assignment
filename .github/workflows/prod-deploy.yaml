@@ -7,6 +7,44 @@ on:
       - completed
 
 jobs:
+  download_sha:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/github-script@v8
+        with:
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
+            });
+            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "sha_output"
+            })[0];
+            let download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            const fs = require('fs');
+            const path = require('path');
+            const temp = '${{ runner.temp }}/artifacts';
+            if (!fs.existsSync(temp)){
+              fs.mkdirSync(temp);
+            }
+            fs.writeFileSync(path.join(temp, 'sha_output.zip'), Buffer.from(download.data));
+
+      - name: Unzip artifact
+        run: unzip "${{ runner.temp }}/artifacts/sha_output.zip" -d "${{ runner.temp }}/artifacts"
+
+      - name: Save SHA
+        run: |
+          SHA=$(cat "${{ runner.temp }}/artifacts/sha.txt")
+          echo "$SHA" >> $GITHUB_ENV
+
+
   create-tag-after-approve:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
@@ -14,9 +52,9 @@ jobs:
       name: prod
       url: https://${{ vars.BASE_DOMAIN_NAME }}
     steps:
-      - name: testing
-        run: |
-          ${{ github.event.workflow_run.outputs.merge_sha }}"
+      - uses: actions/download-artifact@v5
+        with:
+          name: sha-output
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -28,7 +66,7 @@ jobs:
         run: |
           docker buildx imagetools create --tag \
           ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:main-${{ github.run_number }} \
-          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:stage-${{ github.event.workflow_run.outputs.merge_sha }}
+          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:stage-${{ env.SHA }}
 
   # deploy:
   #   needs: create-tag-after-approve

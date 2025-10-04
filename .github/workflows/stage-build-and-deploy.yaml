@@ -97,6 +97,9 @@ jobs:
       - run_smoke_tests
     runs-on: ubuntu-latest
     steps:
-      - name: save SHA
-        run: |
-          echo "merge_sha=${{ github.event.pull_request.merge_commit_sha }}" >> $GITHUB_OUTPUT
+      - name: Save stable SHA
+        run: echo "SHA=${{ github.event.pull_request.merge_commit_sha }}" >> sha.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sha_output
+          path: sha.txt
