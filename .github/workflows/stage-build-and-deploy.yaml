@@ -1,7 +1,9 @@
 name: Stage - Build & Deploy
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
       - stage
     paths-ignore:
