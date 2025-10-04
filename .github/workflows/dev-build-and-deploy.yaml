@@ -11,13 +11,13 @@ on:
 
 jobs:
   build:
-    uses: ./.github/workflows/build.yaml
+    uses: ./.github/workflows/general-build.yaml
     secrets: inherit
     with:
       image_tag: ${{ github.ref_name }}-${{ github.sha }}
   deploy:
     needs: build
-    uses: ./.github/workflows/deploy.yaml
+    uses: ./.github/workflows/general-deploy.yaml
     secrets: inherit
     with:
       environment: dev
