@@ -38,6 +38,7 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
       - name: Write tag to version file
         run: yq -i '.image.tag = "${{ github.base_ref }}-${{ github.sha }}"' manifests-helm/values/stage.yaml
 
