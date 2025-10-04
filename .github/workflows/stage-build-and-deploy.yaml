@@ -25,7 +25,22 @@ jobs:
       environment: stage
       image_tag: ${{ github.base_ref }}-${{ github.sha }}
       subdomain: ${{ github.base_ref }}
-  
+
+  save_tag:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write tag to version file
+        run: yq -i '.image.tag = "${{ github.base_ref }}-${{ github.sha }}"' manifests-helm/values/stage.yaml
+
+      - name: Commit and push version
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add manifests-helm/values/stage.yaml
+          git commit -m "save tag after successful deploy for ${{ github.base_ref }}"
+          git push origin ${{ github.base_ref }}
+
   run_vulnerability_tests:
     needs: build
     runs-on: ubuntu-latest
@@ -72,3 +87,13 @@ jobs:
       - name: Really strong test
         run: |
           curl --fail https://${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }}/healthCheck 
+
+  promote_to_prod:
+    needs:
+      - run_vulnerability_tests
+      - run_smoke_tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: save SHA
+        run: |
+          echo "merge_sha=${{ github.event.pull_request.merge_commit_sha }}" >> $GITHUB_OUTPUT
