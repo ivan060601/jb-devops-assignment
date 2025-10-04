@@ -11,14 +11,6 @@ on:
       - 'README.md'
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Trivy vulnerability scanner
-        run: |
-          echo ${{ github.event_name }}
-          echo ${{ github.event.action }}
-          echo ${{ github.event }}
   build:
     if: github.event.pull_request.merged == true
     uses: ./.github/workflows/general-build.yaml
@@ -50,7 +42,7 @@ jobs:
           git config user.email "actions@github.com"
           git add manifests-helm/values/stage.yaml
           git commit -m "save tag after successful deploy for ${{ github.base_ref }}"
-          git push origin ${{ github.base_ref }}
+          git push origin ${{ github.base_ref }} --force
 
   run_vulnerability_tests:
     needs: build
