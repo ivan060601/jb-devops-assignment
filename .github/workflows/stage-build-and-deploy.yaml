@@ -6,80 +6,27 @@ on:
       - closed
     branches:
       - stage
-
-env:
-  TAG_BASE: stage
+    paths-ignore:
+      - '.gitignore'
+      - 'README.md'
 
 jobs:
-  docker-build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - name: Build an image
-        uses: ./.github/actions/basic-app-build
-        with:
-          docker_username: ${{ vars.DOCKERHUB_USERNAME }}
-          docker_password: ${{ secrets.DOCKERHUB_TOKEN }}
-          image_names: |
-            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.TAG_BASE }}-${{ github.sha }}
-            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.TAG_BASE }}-latest
-
-      - name: Notify FAIL in Telegram
-        if: failure()
-        uses: ./.github/actions/telegram-notifier
-        with:
-          telegram_bot_token: '${{ secrets.TELEGRAM_BOT_TOKEN }}'
-          telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
-          message_content: |
-            ERROR
-            An error occured while building the docker image
-
-            More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
+  build:
+    uses: ./.github/workflows/general-build.yaml
+    secrets: inherit
+    with:
+      image_tag: ${{ github.base_ref }}-${{ github.sha }}
   deploy:
-    runs-on: ubuntu-latest
-    needs: docker-build
-    environment:
-      name: stage
-      url: https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
-    steps:
-      - uses: actions/checkout@v5
-      - name: Deploy a Helm-chart
-        uses: ./.github/actions/basic-app-deploy
-        with:
-          kubeconfig: ${{ secrets.KUBECONFIG }}
-          domain_name: ${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
-          values_path: manifests-helm/values/stage.yaml
-          namespace: ${{ env.TAG_BASE }}
-          release_name: ${{ env.TAG_BASE }}
-          image_tag: ${{ env.TAG_BASE }}-${{ github.sha }}
-
-      - name: Notify SUCCESS in Telegram
-        if: success()
-        uses: ./.github/actions/telegram-notifier
-        with:
-          telegram_bot_token: '${{ secrets.TELEGRAM_BOT_TOKEN }}'
-          telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
-          message_content: |
-            UPDATE
-            Env: <code>${{ env.TAG_BASE }}</code> 
-
-            Link: https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}
-
-      - name: Notify FAIL in Telegram
-        if: failure()
-        uses: ./.github/actions/telegram-notifier
-        with:
-          telegram_bot_token: '${{ secrets.TELEGRAM_BOT_TOKEN }}'
-          telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
-          message_content: |
-            ERROR
-            An error occured while deploying a <code>${{ env.TAG_BASE }}</code>
-
-            More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    needs: build
+    uses: ./.github/workflows/general-deploy.yaml
+    secrets: inherit
+    with:
+      environment: dev
+      image_tag: ${{ github.base_ref }}-${{ github.sha }}
+      subdomain: ${{ github.base_ref }}
   
   run_vulnerability_tests:
-    needs: docker-build
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       security-events: write
@@ -87,7 +34,7 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.28.0
         with:
-          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.TAG_BASE }}-${{ github.sha }}
+          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ github.base_ref }}-${{ github.sha }}
           exit-code: '0'
           ignore-unfixed: true
           vuln-type: 'os,library'
@@ -107,10 +54,10 @@ jobs:
     steps:
       - name: Wait while SSL certificate is issued
         run: |
-          echo "Waiting for a trusted SSL certificate for ${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }} ..."
+          echo "Waiting for a trusted SSL certificate for ${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }} ..."
 
           for i in {1..30}; do
-            if curl -sI "https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}"  >/dev/null 2>&1; then
+            if curl -sI "https://${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }}"  >/dev/null 2>&1; then
               echo "✅ Trusted SSL certificate is available for the domain"
               exit 0
             else
@@ -123,4 +70,12 @@ jobs:
 
       - name: Really strong test
         run: |
-          curl --fail https://${{ env.TAG_BASE }}.${{ vars.BASE_DOMAIN_NAME }}/healthCheck 
+          curl --fail https://${{ github.base_ref }}.${{ vars.BASE_DOMAIN_NAME }}/healthCheck 
+
+  promote_to_prod:
+    needs:
+      - run_vulnerability_tests
+      - run_smoke_tests
+    uses: ./.github/workflows/prod-deploy.yaml
+    with:
+      image_tag: ${{ github.base_ref }}-${{ github.sha }}

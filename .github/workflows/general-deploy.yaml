@@ -1,0 +1,60 @@
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      subdomain:
+        required: false
+        type: string
+      image_tag:
+        required: true
+        type: string
+
+env:
+  DOMAIN_NAME: ${{ inputs.subdomain != '' && format('{0}.{1}', inputs.subdomain, vars.BASE_DOMAIN_NAME) || vars.BASE_DOMAIN_NAME }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: https://${{ env.DOMAIN_NAME }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Deploy a Helm-chart
+        uses: ./.github/actions/basic-app-deploy
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          domain_name: ${{ env.DOMAIN_NAME }}
+          values_path: manifests-helm/values/${{ inputs.environment }}.yaml
+          namespace: ${{ inputs.subdomain }}
+          release_name: ${{ inputs.subdomain }}
+          image_tag: ${{ inputs.image_tag }}
+
+
+      - name: Notify SUCCESS in Telegram
+        if: success()
+        uses: ./.github/actions/telegram-notifier
+        with:
+          telegram_bot_token: '${{ secrets.TELEGRAM_BOT_TOKEN }}'
+          telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
+          message_content: |
+            UPDATE
+            Env: <code>${{ inputs.subdomain }}</code> 
+
+            Link: https://${{ env.DOMAIN_NAME }}
+
+      - name: Notify FAIL in Telegram
+        if: failure()
+        uses: ./.github/actions/telegram-notifier
+        with:
+          telegram_bot_token: '${{ secrets.TELEGRAM_BOT_TOKEN }}'
+          telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
+          message_content: |
+            ERROR
+            An error occured while deploying a <code>${{ inputs.subdomain }}</code> branch
+
+            More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}

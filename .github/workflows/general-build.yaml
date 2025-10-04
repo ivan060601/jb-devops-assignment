@@ -1,0 +1,38 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      image_tag:
+        required: false
+        type: string
+        default: ${{ github.base_ref || github.ref_name }}-${{ github.sha }}
+
+env:
+  BRANCH: ${{ github.base_ref || github.ref_name }}
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build an image
+        uses: ./.github/actions/basic-app-build
+        with:
+          docker_username: ${{ vars.DOCKERHUB_USERNAME }}
+          docker_password: ${{ secrets.DOCKERHUB_TOKEN }}
+          image_names: |
+            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ inputs.image_tag }}
+            ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:${{ env.BRANCH }}-latest
+
+      - name: Notify FAIL in Telegram
+        if: failure()
+        uses: ./.github/actions/telegram-notifier
+        with:
+          telegram_bot_token: '${{ secrets.TELEGRAM_BOT_TOKEN }}'
+          telegram_chat_id: '${{ secrets.TELEGRAM_CHAT_ID }}'
+          message_content: |
+            ERROR
+            An error occured while building the docker image
+
+            More details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
