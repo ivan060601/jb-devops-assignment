@@ -7,7 +7,7 @@ on:
       - completed
 
 jobs:
-  download_sha:
+  download-sha:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifact
@@ -42,11 +42,11 @@ jobs:
       - name: Save SHA
         run: |
           SHA_OUTPUT=$(cat "${{ runner.temp }}/artifacts/sha.txt" | cut -d '=' -f2)
-          echo "SHA=$SHA_OUTPUT" >> $GITHUB_ENV
+          echo "SHA=$SHA_OUTPUT" >> $GITHUB_OUTPUT
 
 
   create-tag-after-approve:
-    needs: download_sha
+    needs: download-sha
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
@@ -61,7 +61,7 @@ jobs:
         run: |
           docker buildx imagetools create --tag \
           ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:main-${{ github.run_number }} \
-          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:stage-${{ env.SHA }}
+          ${{ vars.DOCKERHUB_USERNAME }}/jb-basic-app:stage-${{ needs.download-sha.outputs.SHA }}
 
   deploy:
     needs: create-tag-after-approve
