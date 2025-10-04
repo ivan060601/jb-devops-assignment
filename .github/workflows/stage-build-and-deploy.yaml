@@ -1,9 +1,7 @@
 name: Stage - Build & Deploy
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
       - stage
     paths-ignore:
@@ -12,6 +10,7 @@ on:
 
 jobs:
   build:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     uses: ./.github/workflows/general-build.yaml
     secrets: inherit
     with:
