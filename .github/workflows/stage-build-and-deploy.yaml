@@ -21,7 +21,7 @@ jobs:
     uses: ./.github/workflows/general-deploy.yaml
     secrets: inherit
     with:
-      environment: dev
+      environment: stage
       image_tag: ${{ github.base_ref }}-${{ github.sha }}
       subdomain: ${{ github.base_ref }}
   
