@@ -15,6 +15,7 @@ jobs:
     with:
       image_tag: ${{ github.base_ref }}-${{ github.sha }}
   deploy:
+    needs: build
     uses: ./.github/workflows/deploy.yaml
     with:
       environment: dev
