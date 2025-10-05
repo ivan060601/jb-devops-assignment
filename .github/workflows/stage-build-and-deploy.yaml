@@ -42,7 +42,7 @@ jobs:
           git config user.email "actions@github.com"
           git add manifests-helm/values/stage.yaml
           git commit -m "save tag after successful deploy for ${{ github.base_ref }}"
-          git push origin ${{ github.base_ref }}
+          git push https://x-access-token:${{ secrets.GIT_MERGE_TOKEN }}@${{ github.server_url }}/${{ github.repository }}.git ${{ github.base_ref }} --force
 
   run_vulnerability_tests:
     needs: build

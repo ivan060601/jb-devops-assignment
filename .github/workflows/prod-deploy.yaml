@@ -72,4 +72,5 @@ jobs:
     secrets: inherit
     with:
       environment: prod
+      namespace: prod
       image_tag: main-${{ github.run_number }}
