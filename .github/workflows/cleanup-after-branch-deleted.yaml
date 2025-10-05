@@ -20,9 +20,8 @@ jobs:
 
       - name: Delete the env after branch was deleted
         run: |
-          KUBECONFIG=$HOME/config kubectl delete ns ${{ github.event.ref }}
-        continue-on-error: true
-        
+          KUBECONFIG=$HOME/config kubectl delete ns ${{ github.event.ref }} --ignore-not-found
+
       - name: Notify FAIL in Telegram
         if: failure()
         uses: ./.github/actions/telegram-notifier
