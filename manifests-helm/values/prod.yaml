@@ -4,7 +4,6 @@ ingress:
     kubernetes.io/ingress.class: nginx
   tls:
     - secretName: letsencrypt-jb-basic-app
-
 resources:
   limits:
     cpu: 500m
@@ -12,5 +11,6 @@ resources:
   requests:
     cpu: 100m
     memory: 100Mi
-
 replicaCount: 2
+image:
+  tag: main-35

@@ -5,6 +5,7 @@ on:
     branches-ignore:
       - main
       - stage
+      - release-main-**
     paths-ignore:
       - '.gitignore'
       - 'README.md'

@@ -10,9 +10,6 @@ on:
       - '.gitignore'
       - 'README.md'
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GIT_MERGE_TOKEN }}
-
 jobs:
   build:
     if: github.event.pull_request.merged == true
