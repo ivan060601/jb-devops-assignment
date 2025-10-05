@@ -17,7 +17,7 @@ def broken_health_check():
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def catch_all(path):
-    return "<html><body><h1>Hello very important feature for stage!</h1></body></html>"
+    return "<html><body><h1>Hello PRODUCTION!</h1></body></html>"
 
 if __name__ == "__main__":
     app.run(host=host, port=port)
