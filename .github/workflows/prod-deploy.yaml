@@ -10,7 +10,6 @@ jobs:
   download-sha:
     environment:
       name: prod
-      url: https://${{ vars.BASE_DOMAIN_NAME }}
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.save-sha.outputs.sha }}
@@ -71,6 +70,9 @@ jobs:
 
   deploy:
     needs: create-tag
+    environment:
+      name: prod
+      url: https://${{ vars.BASE_DOMAIN_NAME }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
