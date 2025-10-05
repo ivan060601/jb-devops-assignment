@@ -10,9 +10,6 @@ on:
       - '.gitignore'
       - 'README.md'
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GIT_MERGE_TOKEN }}
-
 jobs:
   build:
     if: github.event.pull_request.merged == true
@@ -32,6 +29,8 @@ jobs:
   save_tag:
     needs: deploy
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v5
       - name: Write tag to version file
