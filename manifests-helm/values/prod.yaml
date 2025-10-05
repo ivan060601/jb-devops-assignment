@@ -13,4 +13,4 @@ resources:
     memory: 100Mi
 replicaCount: 2
 image:
-  tag: main-36
+  tag: main-39
