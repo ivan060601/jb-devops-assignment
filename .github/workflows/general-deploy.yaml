@@ -12,6 +12,9 @@ on:
       image_tag:
         required: false
         type: string
+      namespace:
+        required: false
+        type: string
 
 env:
   DOMAIN_NAME: ${{ inputs.subdomain != '' && format('{0}.{1}', inputs.subdomain, vars.BASE_DOMAIN_NAME) || vars.BASE_DOMAIN_NAME }}
@@ -30,8 +33,8 @@ jobs:
           kubeconfig: ${{ secrets.KUBECONFIG }}
           domain_name: ${{ env.DOMAIN_NAME }}
           values_path: manifests-helm/values/${{ inputs.environment }}.yaml
-          namespace: ${{ inputs.subdomain }}
-          release_name: ${{ inputs.subdomain }}
+          namespace: ${{ inputs.subdomain || inputs.namespace || "default"}}
+          release_name: ${{ inputs.subdomain || "jb-basic-app" }}
           image_tag: ${{ inputs.image_tag }}
 
 
