@@ -83,7 +83,7 @@ jobs:
         uses: ./.github/actions/basic-app-deploy
         with:
           kubeconfig: ${{ secrets.KUBECONFIG }}
-          domain_name: ${{ vars.BASE_DOMAIN_NAME }}
+          domain_name: https://${{ vars.BASE_DOMAIN_NAME }}
           values_path: manifests-helm/values/prod.yaml
           namespace: prod
           release_name: jb-basic-app
