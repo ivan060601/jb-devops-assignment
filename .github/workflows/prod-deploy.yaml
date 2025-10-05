@@ -116,5 +116,5 @@ jobs:
         env:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create -B main -H release-main-${{ github.run_id }} --title 'Merge release-main-${{ github.run_id }} into main'\ 
+          gh pr create -B main -H release-main-${{ github.run_id }} --title 'Merge release-main-${{ github.run_id }} into main' \
           --body 'Created by Github action: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
