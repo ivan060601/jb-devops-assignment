@@ -104,12 +104,12 @@ jobs:
           git reset --hard ${{ needs.download-sha.outputs.sha }}
       - name: Write tag to version file
         run: yq -i '.image.tag = "main-${{ github.run_number }}"' manifests-helm/values/prod.yaml
-      - name: Commit a new image tag to stage
+      - name: Commit a new image tag to values
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git checkout -b release-main-${{ github.run_id }}
-          git add manifests-helm/values/stage.yaml
+          git add manifests-helm/values/prod.yaml
           git commit -m "save tag after successful deploy for prod"
           git push origin release-main-${{ github.run_id }}
       - name: Create a PR
