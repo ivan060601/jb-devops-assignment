@@ -8,8 +8,6 @@ on:
 
 jobs:
   download-sha:
-    environment:
-      name: prod
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.save-sha.outputs.sha }}
